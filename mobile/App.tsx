@@ -1,79 +1,122 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
-
-type BoardState = number[][];
-
-type BoardButtonProps = {
-  onPress: () => void;
-  value: number;
-};
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Button } from "react-native";
+import useTicTacToe, { State, PositionOptions } from "./hook";
 
 type BoardProps = {
-  boardState: BoardState;
-  onChange: (newState: BoardState) => void;
-  turn: 1 | 2;
+  boardState: State;
+  onPress: (key: PositionOptions) => void;
 };
 
-const initialState: BoardState = [
-  [0, 0, 0],
-  [0, 0, 0],
-  [0, 2, 0],
-];
+const label = {
+  0: "   ",
+  1: " X ",
+  2: " O ",
+};
 
-const BoardButton = (props: BoardButtonProps) => {
+const Board = ({ boardState, onPress }: BoardProps) => {
   return (
-    <TouchableOpacity style={styles.boardButton} onPress={props.onPress}>
-      <Text style={styles.boardButtonText}>
-        {props.value === 1 ? "X" : props.value === 2 ? "O" : ""}
-      </Text>
-    </TouchableOpacity>
+    <View style={styles.board}>
+      <View style={styles.row}>
+        <TouchableOpacity
+          onPress={() => onPress(11)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[11]]}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => onPress(12)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[12]]}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => onPress(13)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[13]]}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.row}>
+        <TouchableOpacity
+          onPress={() => onPress(21)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[21]]}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => onPress(22)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[22]]}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => onPress(23)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[23]]}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.row}>
+        <TouchableOpacity
+          onPress={() => onPress(31)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[31]]}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => onPress(32)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[32]]}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => onPress(33)}
+          style={styles.boardButton}
+        >
+          <Text style={styles.boardButtonText}>{label[boardState[33]]}</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
-const Board = ({ boardState, onChange, turn }: BoardProps) => {
-  const handleChange = (x: number, y: number) => {
-    let newBoardState = boardState;
-    newBoardState[x][y] = turn;
-    onChange(newBoardState);
-  };
-
-  const board = boardState.map((row, rowIndex) => {
-    const rowItems = row.map((item, colIndex) => {
-      return (
-        <BoardButton
-          key={`row-${colIndex}`}
-          value={item}
-          onPress={() => handleChange(rowIndex, colIndex)}
-        />
-      );
-    });
-    return (
-      <View key={`col-${rowIndex}`} style={styles.row}>
-        {rowItems}
-      </View>
-    );
-  });
-
-  return <View style={styles.board}>{board}</View>;
-};
-
 export default function App() {
-  const [turn, setTurn] = useState<1 | 2>(1);
-  const [boardState, setBoardState] = useState<BoardState>(initialState);
+  const { winner, turn, boardState, onSelect, resetBoard } = useTicTacToe();
 
-  useEffect(() => {
-    console.log(boardState);
-  }, [boardState]);
-
-  const handleChange = (newBoardState: BoardState) => {
-    setBoardState(newBoardState);
-  };
+  if (winner) {
+    if (winner === -1) {
+      alert("Its a tie!");
+      resetBoard();
+    }
+    if (winner === 1) {
+      alert("X won!");
+      resetBoard();
+    }
+    if (winner === 2) {
+      alert("O won!");
+      resetBoard();
+    }
+  }
 
   return (
     <View style={styles.container}>
-      <Text>Tic Tac Toe!</Text>
-      <Text>Turn: {turn === 1 ? "X" : "O"}</Text>
-      <Board turn={turn} boardState={boardState} onChange={handleChange} />
+      <Text style={styles.labelText}>Tic Tac Toe!</Text>
+      <Text style={styles.labelText}>
+        Turn: {turn === 1 ? "X (Player 1)" : "O (Player 2)"}
+      </Text>
+      <Button title="Reset" onPress={resetBoard} />
+      <Board
+        boardState={boardState}
+        onPress={(key: PositionOptions) => onSelect(key)}
+      />
     </View>
   );
 }
@@ -103,4 +146,5 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
   },
+  labelText: {},
 });
