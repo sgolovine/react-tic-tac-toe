@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 // Positions are keyed by [x][y]
-type PositionOptions = 11 | 12 | 13 | 21 | 22 | 23 | 31 | 32 | 33;
+export type PositionOptions = 11 | 12 | 13 | 21 | 22 | 23 | 31 | 32 | 33;
 
 // Values are 0 for nothing, 1 for X, 2 for O
 type ValueOptions = 0 | 1 | 2;
 
-type State = {
+export type State = {
   [Key in PositionOptions]: ValueOptions;
 };
 
@@ -22,10 +22,27 @@ const initialState: State = {
   33: 0,
 };
 
-export function useTicTacToe() {
+function useTicTacToe() {
   const [turn, setTurn] = useState<1 | 2>(1);
   const [boardState, setBoardState] = useState<State>(initialState);
-  const [winner, setWinner] = useState<0 | 1 | 2 | null>(null);
+  const [winner, setWinner] = useState<-1 | 1 | 2 | null>(null);
+
+  useEffect(() => {
+    const winner = computeWinScenarios(boardState);
+    if (winner > 0) {
+      if (winner === 1) {
+        setWinner(1);
+      } else {
+        setWinner(2);
+      }
+    } else if (computeTie(boardState)) {
+      setWinner(-1);
+    }
+  }, [boardState]);
+
+  useEffect(() => {
+    setTurn(turn === 1 ? 2 : 1);
+  }, [boardState]);
 
   const computeWinScenarios = (boardState: State) => {
     // When computing win scenarios there are
@@ -99,23 +116,15 @@ export function useTicTacToe() {
   const computeTie = (boardState: State) =>
     Math.min(...Object.values(boardState)) > 0;
 
-  useEffect(() => {
-    const winner = computeWinScenarios(boardState);
-    if (winner > 0) {
-      if (winner === 1) {
-        resetBoard();
-        setWinner(1);
-      } else {
-        resetBoard();
-        setWinner(2);
-      }
-    } else if (computeTie(boardState)) {
-      resetBoard();
-      setWinner(0);
-    }
-  }, [boardState]);
+  const resetBoard = () => {
+    setBoardState(initialState);
+    setWinner(null);
+  };
 
-  const resetBoard = () => setBoardState(initialState);
+  const onSelect = (key: PositionOptions) =>
+    setBoardState({ ...boardState, [key]: turn });
 
-  return [winner, turn, setTurn, boardState, setBoardState];
+  return { winner, turn, boardState, onSelect, resetBoard };
 }
+
+export default useTicTacToe;
